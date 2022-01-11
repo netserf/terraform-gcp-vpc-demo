@@ -1,0 +1,106 @@
+steps:
+# Retrieve the github key from secrets
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: retrieve-read-key
+  entrypoint: 'bash'
+  dir: ${_DIR}  
+  args:
+  - '-c'
+  - |
+    gcloud secrets versions access "${_KEY_VERSION}" --secret="git_hub_ssh" --project=${_KEY_PROJECT}  > /root/.ssh/id_rsa
+    gcloud secrets versions access "${_KEY_VERSION}" --secret='git_hub_token' --format='get(payload.data)' --project="${_KEY_PROJECT}" | tr '_-' '/+' | base64 -d  > token.txt
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+# Set up git with key and domain.
+- name: 'gcr.io/cloud-builders/git'
+  id: add-github-key
+  entrypoint: 'bash'
+  dir: ${_DIR}
+  args:
+  - '-c'
+  - |
+    chmod 600 /root/.ssh/id_rsa
+    cat <<EOF >/root/.ssh/config
+    Hostname github.com
+    IdentityFile /root/.ssh/id_rsa
+    EOF
+    ssh-keyscan -t rsa github.com > /root/.ssh/known_hosts
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+# Perform the terrafrom plan or apply
+- name: 'hashicorp/terraform:${_TF_VERSION}'
+  id: terraform
+  dir: ${_DIR}/${_TF_DIR}
+  entrypoint: 'sh'
+  args: 
+  - '-c' # pass what follows as a command to bash
+  - |
+    echo "REPO_NAME ${REPO_NAME}"
+    echo "BRANCH_NAME ${BRANCH_NAME}"
+    echo "_BASE_BRANCH ${_BASE_BRANCH}"
+    echo "_HEAD_BRANCH ${_HEAD_BRANCH}"
+    echo "_HEAD_REPO_URL ${_HEAD_REPO_URL}"
+    echo "_PR_NUMBER ${_PR_NUMBER}"
+    terraform init -backend-config="${_BACKEND_CONFIG_BUCKET}" -backend-config="${_BACKEND_CONFIG_PREFIX}"
+
+    if [[ -z "$_PR_NUMBER" ]] && [[ "${BRANCH_NAME}" == "main" ]]; then
+      terraform apply ${_TF_OPTIONS} -no-color 2>&1 | tee tfout.txt
+    else
+      terraform plan -no-color 2>&1 | tee tfout.txt
+      if grep -q "Error acquiring the state lock" tfout.txt; then
+        echo "State file locked - will try again in 2 minutes"
+        sleep 120
+        terraform plan -no-color 2>&1 | tee tfout.txt
+      fi
+    fi
+  env:
+    - "TF_VAR_project-name=${PROJECT_ID}"   
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+# Write the output in a github comment for pull requests
+# # public: 'leibniz9999/gitcli'
+- name: 'northamerica-northeast1-docker.pkg.dev/gidc-images-pr-bbdc91/hce-docker-repo/gitcli'
+  id: gitcli
+  dir: ${_DIR}
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      if [[ -z "$_PR_NUMBER" ]] && [[ "${BRANCH_NAME}" == "main" ]]; then
+        echo
+        echo "Terraform Apply Results for build ${BUILD_ID}"
+        echo
+        cat ${_TF_DIR}/tfout.txt
+      else
+        echo
+        echo "Terraform Plan Results for build ${BUILD_ID}"
+        echo
+        cat ${_TF_DIR}/tfout.txt
+      fi
+
+      if [[ ! -z "$_PR_NUMBER" ]]; then
+      read -r -d "" gh_comment_template << EOF
+      <details>
+        <summary>Terraform Plan Results for build ${BUILD_ID}</summary>
+
+        \`\`\`
+        %s
+        \`\`\`
+      </details>
+      EOF
+        gh_comment=$(printf "$$gh_comment_template" "$(cat ${_TF_DIR}/tfout.txt)")
+        /usr/bin/gh.bash pr review ${_PR_NUMBER} -c -b "$$gh_comment"
+      fi
+substitutions:
+    _KEY_PROJECT: gidc-secret-manager-pr-619f0a
+    _KEY_VERSION: latest
+    _DIR: .
+    _TF_VERSION: 0.14.11
+    _TF_DIR: terraform
+    _TF_OPTIONS: -auto-approve
+    _BACKEND_CONFIG_BUCKET: bucket=tf-state-${PROJECT_ID} 
+    _BACKEND_CONFIG_PREFIX: prefix=${REPO_NAME} 
+timeout: 1200s
