@@ -1,9 +1,25 @@
-# tf-infra-gidc-instance-repo-template
+# terraform-gcp-vpc-demo
 
-This is a template repo for for use in GIDC projects that have SA managed VM instances.
+Demo build for a Google Cloud VPC with subnets using Terraform.
 
-The terraform/tf_config.tf file needs to be modifed to contain the project id.
+## Steps
 
-For complete information on VM definitions, please see the documentation for the [tf-module-gcp-gidc-vm-mutable](https://github.com/telus/tf-module-gcp-gidc-vm-mutable)
+```
+$ cd terraform
+$ export GOOGLE_CLOUD_PROJECT=[project-id]
+```
 
-Cloud Triggers should be created in the proeject repo to point at your new repo.
+Pull the providers:
+```
+$ terraform init
+```
+
+Apply the updates:
+```
+$ terraform apply
+```
+
+Destroy the resources:
+```
+$ terraform destroy
+```
