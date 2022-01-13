@@ -2,7 +2,9 @@
 
 Demo build for a Google Cloud VPC with subnets using Terraform.
 
-## Steps
+This example borrows from the HashiCorp Terraform registry docs found [here](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_subnetwork).  Some modifications have been made to simplify the example for pedagogical purposes.
+
+## Build Steps
 
 ```
 $ cd terraform
@@ -19,7 +21,9 @@ Apply the updates:
 $ terraform apply
 ```
 
-Destroy the resources:
+## Clean Up
 ```
 $ terraform destroy
 ```
+
+

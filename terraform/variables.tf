@@ -2,7 +2,7 @@
 # a region and zone are selected when you try to create your Terraform resources.
 
 locals {
-  name_suffix = "diy-trial"
+  name_suffix = "tf-trial"
 }
 
 provider "google" {
