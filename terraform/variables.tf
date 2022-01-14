@@ -3,6 +3,6 @@ locals {
 }
 
 provider "google" {
-  region = "us-west1"
-  zone   = "us-west1-c"
+  region = "northamerica-northeast1"
+  zone   = "northamerica-northeast1-c"
 }
