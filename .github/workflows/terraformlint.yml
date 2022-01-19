@@ -1,4 +1,4 @@
-name: Lint
+name: Terraform Lint
 on:
   push:
     branches: [ master ]
@@ -10,7 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
 
     steps:
     - uses: actions/checkout@v2
