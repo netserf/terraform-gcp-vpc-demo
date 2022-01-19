@@ -1,4 +1,5 @@
 # terraform-gcp-vpc-demo
+[![Actions Status](https://github.com/netserf/terraform-gcp-vpc-demo/workflows/Lint/badge.svg)](https://github.com/netserf/terraform-gcp-vpc-demo/actions)
 
 Demo build for a Google Cloud VPC with subnets using Terraform.
 
