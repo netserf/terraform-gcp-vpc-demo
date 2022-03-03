@@ -1,8 +1,10 @@
 locals {
   name_suffix = "tf-trial"
+  tf_bucket = "TODO"
+  tf_folder = "terraform-state"
 }
 
 provider "google" {
-  region = "northamerica-northeast1"
-  zone   = "northamerica-northeast1-c"
+  region = "us-central1"
+  zone   = "us-central1-b"
 }
