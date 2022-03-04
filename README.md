@@ -20,6 +20,14 @@ below.
 git clone https://github.com/netserf/terraform-gcp-vpc-demo.git
 ```
 
+## Pre-Build Steps
+
+Create a GCS bucket which will be the terraform state's home:
+
+```bash
+./gen_gcs_bucket.sh
+```
+
 ## Build Steps
 
 ```bash
