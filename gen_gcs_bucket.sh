@@ -8,16 +8,19 @@ bucket="tf-trial-${uuid}"
 folder="terraform-state"
 gs_url="gs://${bucket}"
 
-echo "enable a few google apis ..."
+echo "Enable a few google apis ..."
 gcloud services enable cloudresourcemanager.googleapis.com
 gcloud services enable compute.googleapis.com
 gcloud services enable storage.googleapis.com
 
-echo "create terraform state file bucket ..."
+echo "Create terraform state file bucket ..."
 gsutil mb -l $region ${gs_url}
+
+echo "Create terraform state file folder ..."
 touch $dummy_file
-gsutil cp $dummy_file -l $region ${gs_url}/${folder}/
+# note - ignore the CommandException for this folder creation step
+gsutil cp $dummy_file -l $region ${gs_url}/${folder}/ 2>&1 | grep -v "CommandException"
 rm $dummy_file
 
-echo "check the bucket ..."
-gsutil ls -l ${gs_url}
+echo "Check the bucket/folder exist ..."
+gsutil ls -l ${gs_url} | awk '{print $1}'

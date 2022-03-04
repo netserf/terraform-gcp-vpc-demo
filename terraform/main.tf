@@ -18,8 +18,8 @@ resource "google_compute_network" "my-auto-net" {
 
 terraform {
   backend "gcs" {
-	  bucket = "${local.tf_bucket}"
-	  prefix = "${local.tf_folder}"
+	  bucket = "<TODO - replace with generated bucket name>"
+	  prefix = "terraform-state"
   }
 }
 
