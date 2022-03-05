@@ -18,7 +18,7 @@ resource "google_compute_network" "my-auto-net" {
 
 terraform {
   backend "gcs" {
-	  bucket = "<TODO - replace with generated bucket name>"
+	  bucket = "{BUCKET_NAME}"
 	  prefix = "terraform-state"
   }
 }
