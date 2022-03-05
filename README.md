@@ -20,9 +20,13 @@ below.
 git clone https://github.com/netserf/terraform-gcp-vpc-demo.git
 ```
 
-## Pre-Build Steps
+## Preparation Steps
 
-Create a GCS bucket which will be the terraform state's home:
+The following script will ensure:
+
+- GCP project ID is set
+- Appropriate GCP APIs are enabled
+- Terraform state file bucket is created
 
 ```bash
 ./gen_gcs_bucket.sh
@@ -32,13 +36,18 @@ Create a GCS bucket which will be the terraform state's home:
 
 ```bash
 cd terraform
-export GOOGLE_CLOUD_PROJECT=[project-id]
 ```
 
 Pull the providers:
 
 ```bash
 terraform init
+```
+
+Review  the plan:
+
+```bash
+terraform plan
 ```
 
 Apply the updates:
